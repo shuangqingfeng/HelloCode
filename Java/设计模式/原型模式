@@ -1,0 +1,118 @@
+使程序运行更高效-->原型模式
+
+	原型模式是一个创建型的模式，原型二字表明了该模式应该有一个样板实例，用户
+	从这个样板对象中复制出一个内部属性一致的对象，这个过程也就是我们俗称的“克隆”。
+	被复制的实例就是我们所称的“原型”，这个原型使可定制的。原型模式多用于创建复杂或者构造耗时的实例，因为这种情况下，复制一个已经存在的实例可使程序运行更搞笑。
+
+	定义：
+		用原型实例指定创建对象的种类，并通过拷贝这些原型创建新的对象。
+
+	使用场景：
+		1.类初始化需要非常多的资源，这个资源包括数据、硬件资源等，通过原型拷贝避免
+		者些消耗；
+		2.通过new产生一个对象需要非常繁琐的数据准备或访问权限，这时可以使用原型模式。
+		3.一个对象需要提供给其他对象访问，而且各个调用者可能都需要修改其值时，可以
+		考虑使用原型模式拷贝多个对象供调用者使用，即保护性拷贝。
+
+			需要主义的是，通过实现Cloneable 接口的原型模式在调用Clone函数构造实例
+			时不一定比通过new操作速度快，只有当通过new构造对象较为耗时或者说成本比
+			较高时，通过clone方法才能够获得效率上的提升。但是，实现原型模式也一定非要实现Cloneable 接口，也有其他的实现方式。
+
+	原型模式的简单实现
+
+		1.浅拷贝：
+
+		//  文档类型，扮演的时ConcretePrototype 角色，而是 cloneable 是代表 prototype 角色
+		public class WordDocument implements Cloneable {
+
+		    //文本
+		    private String mText;
+		    //图片列表
+		    private ArrayList<String> mImages = new ArrayList<>();
+
+		    public WordDocument() {
+		    }
+
+		    @NonNull
+		    @Override
+		    public WordDocument clone() {
+		        WordDocument document = null;
+		        try {
+		            document = (WordDocument) super.clone();
+		            document.mText = this.mText;
+		            document.mImages = this.mImages;
+		            return document;
+		        } catch (CloneNotSupportedException e) {
+		            e.printStackTrace();
+		        }
+		        return null;
+		    }
+
+		    public String getText() {
+		        return mText;
+		    }
+
+		    public void setText(String text) {
+		        this.mText = text;
+		    }
+
+		    public ArrayList<String> getImages() {
+		        return mImages;
+		    }
+
+		    public void addImages(String image) {
+		        this.mImages.add(image);
+		    }
+
+		    public void showDocument() {
+		        System.out.println("text:"+mText);
+		        for (String image : mImages) {
+		            System.out.println("image name:" + image);
+		        }
+		    }
+		}
+
+			//构建文档对象
+			WordDocument wordDocument = new WordDocument();
+			wordDocument.setText("这是一篇文档");
+			wordDocument.addImages("图片1");
+			wordDocument.addImages("图片2");
+			wordDocument.addImages("图片3");
+			wordDocument.showDocument();
+
+			//以原始文档为原型，拷贝一份副本
+			WordDocument wordDocument1 = wordDocument.clone();
+			wordDocument1.showDocument();
+			wordDocument1.setText("这是拷贝的文档");
+			wordDocument1.showDocument();
+
+			wordDocument.showDocument();
+
+		2.深拷贝
+			即在拷贝对象时，对于引用型的字段也要采用拷贝的形式，而不是单纯引用的形式。
+
+			@Override
+		    public WordDocument clone() {
+		        WordDocument document = null;
+		        try {
+		            document = (WordDocument) super.clone();
+		            document.mText = this.mText;
+		            // 对mImages 对象也调用clone() 方法，进行深拷贝
+		            document.mImages = (ArrayList<String>) this.mImages.clone();
+		            return document;
+		        } catch (CloneNotSupportedException e) {
+		            e.printStackTrace();
+		        }
+		        return null;
+		    }
+
+		   原型模式的核心就是对原始对象进行拷贝，在这个模式的使用过程中需要注意一点就是：深、浅拷贝的问题。在开发中，为了尽量减少错误，尽量使用深拷贝，避免操作副本时影响原始对象的问题。
+
+		   优点：
+		   	原型模式是在内存中二进制流的拷贝，要比直接new一个对象性能好很多，特别是要在一个循环体内产生大量的对象时，原型模式可以更好的体现其优点。
+
+		   	缺点：
+		     这个既是它得优点也是缺点，直接在内存中拷贝，构造函数是不会执行的，在实际开发当中应该注意这个潜在的问题。优点就是减少了约束，缺点也是减少了约束，需要大家在实际应用时考虑。
+
+Android 源码中的原型模式实现
+		Intent
