@@ -1,0 +1,126 @@
+Builder模式(建造者模式)
+	Builder 模式是一步一步创建一个复杂对象的创建者型模式，它允许用户在不知道内部构建细节的情况下，可以精细的控制对象的构造流程。该模式是为了将构建复杂对象的过程和它的部件解耦，使得构建过程和部件的表示隔离开。
+
+	定义：
+		将一个复杂对象的构建与它的表示分离，使得同样的构建过程可以创建不同的表示
+
+	使用场景：
+		1.相同的方法，不同的执行顺序，产生不同的事件结果时；
+		2.多个部件或零件，都可以装配到一个对象中，但是产生的运行结果又不相同时；
+		3.产拼类非常复杂，或者产品类中的调用顺序不同产生了不同的作用，这个时候使用建造者模式非常合适；
+		4.当初始化一个对象特别复杂，如参数多，且很多参数都具有默认值时。
+
+	简单实现：
+
+		// 计算机抽象类，即Product 角色
+		public abstract class Computer {
+		    protected String mBoard;
+		    protected String mDisplay;
+		    protected String mOS;
+
+		    protected Computer() {
+		    }
+
+		    public void setBoard(String board) {
+		        this.mBoard = board;
+		    }
+
+		    public void setDisplay(String display) {
+		        this.mDisplay = display;
+		    }
+
+		    public abstract void setOS();
+
+		    @Override
+		    public String toString() {
+		        return "Computer{" +
+		                "mBoard='" + mBoard + '\'' +
+		                ", mDisplay='" + mDisplay + '\'' +
+		                ", mOS='" + mOS + '\'' +
+		                '}';
+		    }
+		}
+
+		// 具体的Computer 类  ，Macbook
+		public class Macbook extends Computer {
+
+		    protected Macbook() {
+		    }
+
+		    @Override
+		    public void setOS() {
+		        mOS = "Mac OS X 10.10";
+		    }
+		}
+
+		//抽象Builder
+		public abstract class Builder {
+
+		    public abstract void buildBoard(String board);
+
+		    public abstract void buildDisplay(String display);
+
+		    public abstract void buildOS();
+
+		    public abstract Computer create();
+		}
+
+		// 具体的Builder 类，MackbookBuilder
+		public class MacbookBuilder extends Builder {
+
+		    private Computer mComputer = new Macbook();
+
+		    @Override
+		    public void buildBoard(String board) {
+		        mComputer.setBoard(board);
+		    }
+
+		    @Override
+		    public void buildDisplay(String display) {
+		        mComputer.setDisplay(display);
+		    }
+
+		    @Override
+		    public void buildOS() {
+		        mComputer.setOS();
+		    }
+
+		    @Override
+		    public Computer create() {
+		        return mComputer;
+		    }
+		}
+
+		// Director 类，负责构造Computer
+		public class Director {
+
+		    Builder mBuilder = null;
+
+		    public Director(Builder builder) {
+		        this.mBuilder = builder;
+		    }
+
+		    public void Construct(String board, String display) {
+		        mBuilder.buildBoard(board);
+		        mBuilder.buildDisplay(display);
+		        mBuilder.buildOS();
+		    }
+		}
+
+		//测试
+		//构建器
+		Builder builder = new MacbookBuilder();
+		//Director
+		Director director = new Director(builder);
+		director.Construct("英特尔主板", "Retina 显示器");
+		System.out.println("Computer info:" + builder.create().toString());
+
+	Builder比较常见的实现形式时通过调用链实现，这样使得代码更简洁、易懂，使用Builder的优缺点：
+		优点：
+			1.良好的封装性，使用建造者模式可以使客户端不必知道产品内部组成的细节；
+			2.建造者独立，容易扩展。
+		缺点：
+			会产生多余的Builder 对象以及Director对象，消耗内存。
+
+Android 源码中最常见的的 Builder 模式实现
+	AlertDialog.Builder 

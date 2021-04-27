@@ -95,3 +95,17 @@ Java 基础知识
 	Stack:继承自Vector，实现一个后进先出的栈。提供了几个基本方法，push、pop、peak、empty、search等。
 	Queue:提供了几个基本方法，offer、poll、peek等。已知实现类有LinkedList、PriorityQueue等。
 
+#Thread与Runnable的区别？
+	1.Thread 是一个类，而Runnable是一个接口；
+	2.Thread 实现了Runnable接口，并重写了run()；
+	3.Java 是单继承思想，通过接口就可以可以加灵活；
+	4.实现Runnable 适合多个相同程序代码的线程区同时处理资源。
+#线程池
+	Executors.newCachedThreadPool();
+        返回一个带缓存的线程池，是一种线程数量不定的线程池，其最大线程数位 Integer.MAX_VALUE,该线程池在必要的时候创建线程池，在线程空闲60秒之后终止线程。这类线程池比较适合执行大量的耗时较少的任务。
+    Executors.newFixedThreadPool(int threads)；
+        返回一个带缓存的线程池，该池中的线程数有参数指定，如果工作的线程数量达到线程池初始的最大数，则将提交的任务存入到池队列中。当线程处于空闲状态时，并不会被回收，除非线程池关闭。
+    Executors.newScheduledThreadPool(int threads);
+        创建一个线程池，它的核心线程数量是固定的，而非核心线程数是没有限制的，并且当非核心线程闲置时会被立即回收，它可安排给定延迟后运行命令或者定期地执行。这类线程池主要用于执行定时任务和具有固定周期的重复任务.
+    Executors.newSingleThreadExecutor();
+        返回一个执行器，它在一个单一的线程中依次执行各个任务。由于只有一个线程所以不需要 处理线程同步的问题，确保所有的任务都在同一个线程中按顺序中执行，并且可以在任意给定的时间不会有多个线程是活动的
