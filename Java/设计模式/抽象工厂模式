@@ -1,0 +1,137 @@
+创建型设计模式-->抽象工厂模式
+	抽象工厂也是创建型模式之一。
+
+	定义：
+		为创建一组相关或者是相互依赖的对象提供一个接口，而不需要指定他们的具体类。
+
+	使用场景：
+		一个对象组由相同的约束时可以使用抽象工厂模式。
+
+	简单实现：
+
+		/**
+		 * 抽象产品类A
+		 * 抽象产品角色，它为每种产品声明接口
+		 */
+		public abstract class AbstractProductA {
+		    /**
+		     * 每个具体的产品子类需要实现的方法
+		     */
+
+		    public abstract void method();
+		}
+
+		//抽象产品类B
+		public abstract class AbstractProductB {
+		    /**
+		     * 每个具体的产品子类需要实现的方法
+		     */
+
+		    public abstract void method();
+		}
+
+		/**
+		 * 具体产品角色，它定义具体工厂生产的具体产品对象，实现抽象产品接口中声明的业务方法。
+		 */
+		public class ConcreteProductA1 extends AbstractProductA {
+
+		    @Override
+		    public void method() {
+		        System.out.println("具体产品A1 的方法");
+		    }
+		}
+
+		// 具体产品类A2
+		public class ConcreteProductA2 extends AbstractProductA {
+
+		    @Override
+		    public void method() {
+		        System.out.println("具体产品A2 的方法");
+		    }
+		}
+
+		// 具体产品类B1
+		public class ConcreteProductB1 extends AbstractProductB {
+
+		    @Override
+		    public void method() {
+		        System.out.println("具体产品B1 的方法");
+		    }
+		}
+
+
+		// 具体产品类B2
+		public class ConcreteProductB2 extends AbstractProductB {
+
+		    @Override
+		    public void method() {
+		        System.out.println("具体产品B2 的方法");
+		    }
+		}
+
+
+		/**
+		 * 抽象工厂类
+		 * 声明了一组用于创建一种产品的方法，每一个方法对应一种产品。
+		 */
+		public abstract class AbstractFactory {
+
+		    /**
+		     * 创建产品A的方法
+		     * @return 产品A对象
+		     */
+		    public abstract AbstractProductA createProductA();
+
+		    /**
+		     * 创建产品B的方法
+		     * @return 产品B对象
+		     */
+		    public abstract AbstractProductB createProductB();
+		}
+
+		/**
+		 * 具体工厂角色，它实现了在抽象工厂中定义的创建产品的方法，生成一组具体的产品，
+		 * 这些产品构成了一个产品种类，每一个产品都位于某个产品的等级结构中
+		 */
+		public class ConcreteFactory1 extends AbstractFactory {
+
+		    @Override
+		    public AbstractProductA createProductA() {
+		        return new ConcreteProductA1();
+		    }
+
+		    @Override
+		    public AbstractProductB createProductB() {
+		        return new ConcreteProductB1();
+		    }
+		}
+
+		// 具体工厂类2
+		public class ConcreteFactory2 extends AbstractFactory {
+
+		    @Override
+		    public AbstractProductA createProductA() {
+		        return new ConcreteProductA2();
+		    }
+
+		    @Override
+		    public AbstractProductB createProductB() {
+		        return new ConcreteProductB2();
+		    }
+		}
+
+	    public static void main(String[] args) {
+	        // 创建工厂
+	        ConcreteFactory1 factory1 = new ConcreteFactory1();
+	        // 生产产品
+	        AbstractProductA productA = factory1.createProductA();
+	        // 具体的产品
+	        productA.method();
+	        AbstractProductB productB = factory1.createProductB();
+	        productB.method();
+	    }
+
+
+
+
+
