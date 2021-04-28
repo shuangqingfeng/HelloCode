@@ -1,0 +1,289 @@
+使编程更有灵活性-->责任链模式
+	责任链模式(Iterator Pattern)是行为型设计模式之一。
+
+	定义：
+		使多个对象都有机会处理请求，从而避免了请求到发送者和接收者之间的耦合关系。将这些对象连成一条链，并沿着这条链传递该请求，直到有对象处理它为止。
+
+	使用场景：
+		多个对象可以处理统一请求，但具体由哪个对象处理则在运行时动态决定。
+		在请求处理者不明确的情况下向多个对象中的一个提交一个请求。
+		需要动态指定一组对象处理请求。
+
+	简单实现：
+
+		/**
+		 * 抽象处理者
+		 */
+		public abstract class Handler {
+
+		    protected Handler successor; // 下一节点处理者
+
+		    /**
+		     * 请求处理
+		     *
+		     * @param condition 请求条件
+		     */
+		    public abstract void handleRequest(String condition);
+		}
+
+		/**
+		 * 具体的处理者1
+		 */
+		public class ConcreteHandler1 extends Handler {
+
+		    @Override
+		    public void handleRequest(String condition) {
+		        if (condition.equals("ConcreteHandler1")) {
+		            System.out.println("ConcreteHandler1 handled");
+		        } else {
+		            successor.handleRequest(condition);
+		        }
+		    }
+		}
+
+		/**
+		 * 具体的处理者2
+		 */
+		public class ConcreteHandler2 extends Handler {
+
+		    @Override
+		    public void handleRequest(String condition) {
+		        if (condition.equals("ConcreteHandler2")) {
+		            System.out.println("ConcreteHandler2 handled");
+		        } else {
+		            successor.handleRequest(condition);
+		        }
+		    }
+		}
+
+		/**
+		 * 客户类
+		 */
+		public class Client {
+
+		    public static void main(String[] args) {
+		        // 构造一个 ConcreteHandler1 对象
+		        ConcreteHandler1 handler1 = new ConcreteHandler1();
+
+		        // 构造一个 ConcreteHandler2 对象
+		        ConcreteHandler2 handler2 = new ConcreteHandler2();
+
+		        // 设置handler1 的下一个节点
+		        handler1.successor = handler2;
+		        // 设置handler2 的下一个节点
+		        handler2.successor = handler1;
+		        // 处理请求
+		        handler1.handleRequest("ConcreteHandler2");
+		    }
+		}
+
+		Handler:
+			抽象处理者角色，声明一个请求处理的方法，并在其中保持一个对下一个处
+			理节点Handler 对象的引用。
+		ConcreteHandler:
+			具体处理者角色，对请求进行处理，如果不能处理则将该请求转发给下一个
+			节点上的处理对象。
+
+	简单实现：
+
+		/**
+		 * 抽象请求者
+		 */
+		public abstract class AbstractRequest {
+
+		    private Object obj; // 处理对象
+
+		    public AbstractRequest(Object obj) {
+		        this.obj = obj;
+		    }
+
+		    /**
+		     * 获取处理的内容对象
+		     *
+		     * @return 具体的内容对象
+		     */
+
+		    public Object getContent() {
+		        return obj;
+		    }
+
+
+		    /**
+		     * 获取请求级别
+		     *
+		     * @return 请求级别
+		     */
+		    public abstract int getRequestLevel();
+		}
+
+		/**
+		 * 请求者
+		 */
+		public class Request1 extends AbstractRequest {
+
+		    public Request1(Object obj) {
+		        super(obj);
+		    }
+
+		    @Override
+		    public int getRequestLevel() {
+		        return 1;
+		    }
+		}
+
+		/**
+		 * 请求者
+		 */
+		public class Request2 extends AbstractRequest {
+
+		    public Request2(Object obj) {
+		        super(obj);
+		    }
+
+		    @Override
+		    public int getRequestLevel() {
+		        return 2;
+		    }
+		}
+
+		/**
+		 * 请求者
+		 */
+		public class Request3 extends AbstractRequest {
+
+		    public Request3(Object obj) {
+		        super(obj);
+		    }
+
+		    @Override
+		    public int getRequestLevel() {
+		        return 3;
+		    }
+		}
+
+		/**
+		 * 抽象处理者
+		 */
+		public abstract class AbstractHandler {
+
+		    protected AbstractHandler nextHandler; // 下一节点处理者对象
+
+		    /**
+		     * 处理请求
+		     *
+		     * @param request 请求对象
+		     */
+		    public final void handleRequest(AbstractRequest request) {
+		        if (getHandleLevel() == request.getRequestLevel()) {
+		            // 一致则由该处理对象 处理
+		            handle(request);
+		        } else {
+		            if (null != nextHandler) {
+		                nextHandler.handleRequest(request);
+		            }else{
+		                System.out.println("All of handler can not handle the request");
+		            }
+		        }
+		    }
+
+		    /**
+		     * 获取处理者对象的处理级别
+		     *
+		     * @return 处理级别
+		     */
+		    protected abstract int getHandleLevel();
+
+		    /**
+		     * 每个处理者对象的具体处理方式
+		     *
+		     * @param request 请求者对象
+		     */
+		    protected abstract void handle(AbstractRequest request);
+		}
+
+		/**
+		 * 处理者
+		 */
+		public class Handler1 extends AbstractHandler {
+
+		    @Override
+		    protected int getHandleLevel() {
+		        return 1;
+		    }
+
+		    @Override
+		    protected void handle(AbstractRequest request) {
+		        System.out.println("Handler1 handle request" + request.getRequestLevel());
+		    }
+		}
+
+		/**
+		 * 处理者
+		 */
+		public class Handler2 extends AbstractHandler {
+
+		    @Override
+		    protected int getHandleLevel() {
+		        return 2;
+		    }
+
+		    @Override
+		    protected void handle(AbstractRequest request) {
+		        System.out.println("Handler2 handle request" + request.getRequestLevel());
+		    }
+		}
+
+		/**
+		 * 处理者
+		 */
+		public class Handler3 extends AbstractHandler {
+
+		    @Override
+		    protected int getHandleLevel() {
+		        return 3;
+		    }
+
+		    @Override
+		    protected void handle(AbstractRequest request) {
+		        System.out.println("Handler3 handle request" + request.getRequestLevel());
+		    }
+		}
+
+		/**
+		 * 客户类
+		 */
+		public class Client {
+
+		    public static void main(String[] args) {
+		        // 构造3个处理者对象
+		        AbstractHandler handler1 = new Handler1();
+		        AbstractHandler handler2 = new Handler2();
+		        AbstractHandler handler3 = new Handler3();
+
+		        //设置当前处理者对象下一个节点的处理对象
+		        handler1.nextHandler = handler2;
+		        handler2.nextHandler = handler3;
+
+		        //构造3个请求者对象
+		        AbstractRequest request1 = new Request1("Request1");
+		        AbstractRequest request2 = new Request2("Request2");
+		        AbstractRequest request3 = new Request3("Request3");
+
+		        //总是从链式的手段发起请求
+		        handler1.handleRequest(request1);
+		        handler1.handleRequest(request2);
+		        handler1.handleRequest(request3);
+		    }
+		}
+
+	Android 源码中的责任链模式实现：
+		责任链模式在Android源码中比较类似的实现莫过于对事件的分发处理。
+
+
+	优点：
+		对请求者和矗立着关系解耦，提高代码的灵活性。
+	缺点：
+		对链中请求处理者的遍历，如果处理者太多那么遍历必定会影响兴能
+		特别实在一些递归调用中，要慎重。
+
+
