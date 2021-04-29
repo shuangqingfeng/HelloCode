@@ -61,6 +61,7 @@ Java 基础知识
 	1.静态内部类不需要有指向外部类的引用就可以调用，非静态内部类需要持有对外部类的引用才可以调用；
 	2.非静态内部类只能访问外部类的静态成员和静态方法，非静态内部类可以访问外部类的静态成员和静态方法；
 	3.非静态内部类不能离开外部类的引用而创建，非静态内部类可以访问外部类的成员和方法。
+	
 #Java 集合 List、Set、Map的区别？
 	List:元素是有序的，元素可以重复，每个元素都有自己的角标(索引)。
 		1.ArrayList:底层的数据结构是数组结构，特点是：查询很快，增删慢，线程不同步；
@@ -95,17 +96,231 @@ Java 基础知识
 	Stack:继承自Vector，实现一个后进先出的栈。提供了几个基本方法，push、pop、peak、empty、search等。
 	Queue:提供了几个基本方法，offer、poll、peek等。已知实现类有LinkedList、PriorityQueue等。
 
+#反射机制
+	什么是反射？
+		在运行状态中，对于任意一个类，都能够知道这个类的所有属性和方法；对于任意一个
+		对象，都能够调用它的任意一个方法和属性；这种动态获取的信息以及动态调用对象的方法的功能称为Java语言的反射机制。
+
+	使用场景：
+		1.在运行时判断任意一个对象所属的类；
+		2.在运行时构造任意一个类的对象；
+		3.在运行时判断任意一个类所具有的成员变量和方法；
+		4.在运行时调用任意一个对象的方法；
+		5.生成动态代理。
+
+	反射机制相关的类：
+		1.Class类：类的实体，在运行的Java 应用程序中表示类和接口；
+		2.Field类：类的成员变量(类的属性)；
+		3.Constructor类 ：类的构造方法；
+		4.Method类： 类的方法 
+
+	反射示例：
+
+		class User implements InvocationHandler {
+		    private String name; // 用户名字
+		    public int age;// 用户年龄
+
+		    public User() {
+		    }
+
+		    /**
+		     * 通过构造设置用户名字和年龄
+		     *
+		     * @param name 名字
+		     * @param age  年龄
+		     */
+		    public User(String name, int age) {
+		        this.name = name;
+		        this.age = age;
+		    }
+
+		    // 获取用户名字
+		    public String getName() {
+		        return name;
+		    }
+
+		    // 设置用户名字
+		    public void setName(String name) {
+		        this.name = name;
+		    }
+
+		    // 获取用户年龄
+		    private int getAge() {
+		        return age;
+		    }
+
+		    // 设置用户年龄
+		    private void setAge(int age) {
+		        this.age = age;
+		    }
+
+		    @Override
+		    public String toString() {
+		        return "User{" +
+		                "name='" + name + '\'' +
+		                ", age=" + age +
+		                '}';
+		    }
+
+		    @Override
+		    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+		        return null;
+		    }
+		}
+
+		class Test {
+		    public static void main(String[] args) {
+
+		        try {
+		            // 一、 获取Class对象的三种方式
+		            //1.通过Class 类中的静态方法直接获取一个类的对象，当类在源文件阶段
+		            Class<User> user = (Class<User>) Class.forName("com.baozi.learnkotlin.reflection.User");
+		            //Class.forName：class com.baozi.learnkotlin.reflection.User
+		            System.out.println("Class.forName：" + user);
+		            //2.直接通过类.class文件获取，当类被加载成 .class 文件时
+		            Class<User> userClass = User.class;
+		            //User.class：class com.baozi.learnkotlin.reflection.User
+		            System.out.println("User.class：" + user);
+
+		            //3.通过类的实例获取，该类处于创建对象
+		            User instance = new User("a", 12);
+		            Class<? extends User> aClass = instance.getClass();
+		            //instance.getClass：class com.baozi.learnkotlin.reflection.User
+		            System.out.println("instance.getClass：" + user);
+
+		            // 二、通过Class 对象获取实例对象
+		            Class<?> clazz = Class.forName("com.baozi.learnkotlin.reflection.User");
+		            // 通过类对象获取实例对象
+		            User useInstance = (User) clazz.newInstance();
+
+		            //通过构造器获取实例对象
+		            // 构造器没有参数
+		            Constructor<?> constructor = clazz.getConstructor();
+		            User useInstance1 = (User) constructor.newInstance();
+		            //User{name='null', age=0}
+		            System.out.println(useInstance1.toString());
+		            // 构造器有参数
+		            Constructor<?> constructor1 = clazz.getConstructor(String.class, int.class);
+		            User useInstance2 = (User) constructor1.newInstance("小王", 23);
+		            //User{name='小王', age=23}
+		            System.out.println(useInstance2.toString());
+		            //获取所有的构造方法
+		            Constructor<?>[] constructors = clazz.getConstructors();
+		            // 遍历所有的构造方法
+		            for (int i = 0; i < constructors.length; i++) {
+		                Class<?>[] parameterTypes = constructors[i].getParameterTypes();
+		                System.out.println("第" + i + "个构造函数");
+		                for (int j = 0; j < parameterTypes.length; j++) {
+		                    System.out.println("获取构造函数中的参数：" + parameterTypes[j].getName() + ",");
+		                }
+		            }
+
+		            // 获取成员属性并使用
+		            //公开的(public)可以通过 getField 获取 ，私有的(private)不可以
+		            Field age = clazz.getField("age");
+		            age.setInt(useInstance, 20);
+		            //Field age:20
+		            System.out.println("Field age:" + age.getInt(useInstance));
+		            //私有的通过 getDeclaredField,并调用setAccessible 设置访问权限
+		            Field name = clazz.getDeclaredField("name");
+		            name.setAccessible(true);
+		            name.set(useInstance, "小李");
+		            //Field name:小李
+		            System.out.println("Field name:" + name.get(useInstance));
+		            // 获取全部的成员属性包括私有的属性
+		            Field[] declaredFields = clazz.getDeclaredFields();
+		            for (int i = 0; i < declaredFields.length; i++) {
+		                Field declaredField = declaredFields[i];
+		                // 将私有属性权限打开
+		                declaredField.setAccessible(true);
+		                //获取所有属性的值
+		                //全部的成员变量:小李,全部的成员变量:20,
+		                // 因为用的是同一个实例对象，并且上面进行过赋值操作
+		                System.out.println("全部的成员变量:" + declaredField.get(useInstance) + ",");
+		            }
+		            // 获得方法并使用(公开方法)
+		            Method setNameMethod = clazz.getMethod("setName", String.class);
+		            setNameMethod.invoke(useInstance, "小张");
+		            Method getNameMethod = clazz.getMethod("getName");
+		            String getName = (String) getNameMethod.invoke(useInstance);
+		            //用户名：小张
+		            System.out.println("用户名：" + getName);
+		            // 获得私有方法
+		            Method setAgeMethod = clazz.getDeclaredMethod("setAge", int.class);
+		            setAgeMethod.setAccessible(true);
+		            setAgeMethod.invoke(useInstance, 50);
+		            Method getAgeMethod = clazz.getDeclaredMethod("getAge");
+		            getAgeMethod.setAccessible(true);
+		            int getAge = (int) getAgeMethod.invoke(useInstance);
+		            //用户年龄：50
+		            System.out.println("用户年龄：" + getAge);
+
+		            // 获取所有的方法包含私有方法
+		            Method[] declaredMethods = clazz.getDeclaredMethods();
+		            for (int i = 0; i < declaredMethods.length; i++) {
+		                Method declaredMethod = declaredMethods[i];
+		                declaredMethod.setAccessible(true);
+		                //方法名称：toString，方法名称：getName，方法名称：setName
+		                //方法参数类型java.lang.String，方法名称：getAge，方法名称：setAge
+		                //方法参数类型int
+		                System.out.println("方法名称：" + declaredMethod.getName());
+		                Class<?>[] parameterTypes = declaredMethod.getParameterTypes();
+		                for (int j = 0; j < parameterTypes.length; j++) {
+		                    System.out.println("方法参数类型" + parameterTypes[j].getName());
+		                }
+		            }
+		            //获取该类父类
+		            Class<?> superclass = clazz.getSuperclass();
+		            //父类：java.lang.Object
+		            System.out.println("父类：" + superclass.getName());
+		            //获取该类所有的接口
+		            Class<?>[] interfaces = clazz.getInterfaces();
+		            for (Class<?> anInterface : interfaces) {
+		                System.out.println("该类所有接口：" + anInterface.getName());
+		            }
+		        } catch (ClassNotFoundException e) {
+		            e.printStackTrace();
+		        } catch (IllegalAccessException e) {
+		            e.printStackTrace();
+		        } catch (InstantiationException e) {
+		            e.printStackTrace();
+		        } catch (NoSuchMethodException e) {
+		            e.printStackTrace();
+		        } catch (InvocationTargetException e) {
+		            e.printStackTrace();
+		        } catch (NoSuchFieldException e) {
+		            e.printStackTrace();
+		        }
+		    }
+		}
+
+
 #Thread与Runnable的区别？
 	1.Thread 是一个类，而Runnable是一个接口；
 	2.Thread 实现了Runnable接口，并重写了run()；
 	3.Java 是单继承思想，通过接口就可以可以加灵活；
 	4.实现Runnable 适合多个相同程序代码的线程区同时处理资源。
-#线程池
-	Executors.newCachedThreadPool();
+
+#如何创建一个线程池
+	1.Executors.newCachedThreadPool();
         返回一个带缓存的线程池，是一种线程数量不定的线程池，其最大线程数位 Integer.MAX_VALUE,该线程池在必要的时候创建线程池，在线程空闲60秒之后终止线程。这类线程池比较适合执行大量的耗时较少的任务。
-    Executors.newFixedThreadPool(int threads)；
-        返回一个带缓存的线程池，该池中的线程数有参数指定，如果工作的线程数量达到线程池初始的最大数，则将提交的任务存入到池队列中。当线程处于空闲状态时，并不会被回收，除非线程池关闭。
-    Executors.newScheduledThreadPool(int threads);
+    2.Executors.newFixedThreadPool(int threads)；
+        返回一个带缓存的线程池，该池中的线程数有参数指定，如果工作的线程数量达到线程池初始的最大数，则将提交的任务存入到线程池队列中。当线程处于空闲状态时，并不会被回收，除非线程池关闭。
+    3.Executors.newScheduledThreadPool(int threads);
         创建一个线程池，它的核心线程数量是固定的，而非核心线程数是没有限制的，并且当非核心线程闲置时会被立即回收，它可安排给定延迟后运行命令或者定期地执行。这类线程池主要用于执行定时任务和具有固定周期的重复任务.
-    Executors.newSingleThreadExecutor();
+    4.Executors.newSingleThreadExecutor();
         返回一个执行器，它在一个单一的线程中依次执行各个任务。由于只有一个线程所以不需要 处理线程同步的问题，确保所有的任务都在同一个线程中按顺序中执行，并且可以在任意给定的时间不会有多个线程是活动的
+    5.通过ThreadPoolExecutor 来创建一个线程池
+    	new ThreadPoolExecutor(corePoolSize,// 核心线程数
+                        maximumPoolSize, // 最大线程数
+                        keepAliveTime, // 闲置线程存活时间
+                        TimeUnit.MILLISECONDS,// 时间单位
+                        new LinkedBlockingDeque<Runnable>(Integer.MAX_VALUE),// 线程队列
+                        Executors.defaultThreadFactory(),// 线程工厂
+                        new ThreadPoolExecutor.AbortPolicy() {// 队列已满,而且当前线程数已经超过最大线程数时的异常处理策略
+                            @Override
+                            public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
+                                super.rejectedExecution(r, e);
+                            }
+                        }
+                );
