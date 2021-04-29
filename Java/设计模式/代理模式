@@ -1,0 +1,254 @@
+编程好帮手-->代理模式
+	代理模式(Proxy Pattern) 也称为委托模式，是结构性设计模式之一。
+
+	定义：
+		为其他对象提供一种代理以控制对这个对象的访问。
+
+	使用场景：
+		当无法或不想直接访问某个对象或访问某个对象存在困难时可以通过一个代理
+		对象来间接访问，为了保证客户端使用的透明性，委托对象与代理对象需要实现
+		相同的接口。
+
+	通用模式：
+
+		/**
+		 * 抽象主题类
+		 */
+		public abstract class Subject {
+
+		    /**
+		     * 一个普通的业务方法
+		     */
+		    public abstract void visit();
+
+		}
+
+		/**
+		 * 实现抽象主题的真实主题类
+		 */
+		public class RealSubject extends Subject{
+		    @Override
+		    public void visit() {
+		        // RealSubject 中visit的具体逻辑
+		        System.out.println("Real subject!");
+		    }
+		}
+
+		/**
+		 * 代理类
+		 */
+		public class ProxySubject extends Subject {
+		    private RealSubject mSubject; //持有真实主题的引用
+
+		    public ProxySubject(RealSubject subject) {
+		        this.mSubject = subject;
+		    }
+
+		    @Override
+		    public void visit() {
+		        // 通过真实主题引用的对象调用真实主题中的逻辑方法
+		        mSubject.visit();
+		    }
+		}
+
+		/**
+		 * 客户端
+		 */
+		public class Client {
+		    public static void main(String[] args) {
+		        // 构造一个真实主题对象
+		        RealSubject realSubject = new RealSubject();
+		        //通过真实主题对象构造一个代理对象
+		        ProxySubject proxySubject = new ProxySubject(realSubject);
+		        //调用代理的相关方法
+		        proxySubject.visit();
+		    }
+		}
+
+		Subject:
+			抽象主题类。
+			该类的主要职责时声明真实主题与代理的共同接口方法，该类既可以是
+			一个抽象类也可以时一个接口。
+
+		RealSubject:
+			真实主题类。
+			该类也称为被委托类或被代理类，该类定义了代理所表示的真实对象，
+			由其执行具体的业务逻辑方法，该类则通过代理类间接的调用真实主题
+			类中定义的方法。
+
+		ProxySubject:
+			代理类。
+			该类也成为委托类或代理类，该类持有一个对真实主题类的引用，在其
+			所实现的接口方法中调用真实主题类中相应的接口方法执行，以此起到代理的作用
+
+		Client:
+			客户类，即使用代理类的类型。
+
+	简单示例
+
+		/**
+		 * 诉讼接口类
+		 */
+		public interface ILawsuit {
+
+		    //提交申请
+		    void submit();
+
+		    //进行举证
+		    void burden();
+
+		    //开始辩护
+		    void defend();
+
+		    //诉讼完成
+		    void finish();
+		}
+
+		/**
+		 * 具体诉讼人(被代理)
+		 */
+		public class XiaoMin implements ILawsuit {
+		    @Override
+		    public void submit() {
+		        // 老板欠小民工资，小民只好申请仲裁
+		        System.out.println("老板拖欠工资！特此申请仲裁");
+		    }
+
+		    @Override
+		    public void burden() {
+		        // 小民证据充足，不怕告不赢
+		        System.out.println("这是合同书和过去一年的银行工资流水");
+		    }
+
+		    @Override
+		    public void defend() {
+		        //铁证如山，证据确凿
+		        System.out.println("证据确凿！不需要说什么了");
+		    }
+
+		    @Override
+		    public void finish() {
+		        //结果也是肯定的，必赢
+		        System.out.println("诉讼成功！判决老板即日起七天内结算工资");
+		    }
+		}
+
+		/**
+		 * 具体诉讼人
+		 */
+		public class Lawyer implements ILawsuit {
+		    private ILawsuit mLawsuit;// 持有一个具体被代理者的引用
+
+		    public Lawyer(ILawsuit lawsuit) {
+		        this.mLawsuit = lawsuit;
+		    }
+
+		    @Override
+		    public void submit() {
+		        mLawsuit.submit();
+		    }
+
+		    @Override
+		    public void burden() {
+		        mLawsuit.burden();
+		    }
+
+		    @Override
+		    public void defend() {
+		        mLawsuit.defend();
+		    }
+
+		    @Override
+		    public void finish() {
+		        mLawsuit.finish();
+		    }
+		}
+
+		public class Client {
+		    public static void main(String[] args) {
+		        //构造一个小民
+		        ILawsuit xiaomin = new XiaoMin();
+		        //构造一个代理律师并将小民作为构造参数传递进去
+		        ILawsuit lawyer = new Lawyer(xiaomin);
+		        //律师提交诉讼申请
+		        lawyer.submit();
+		        //律师进行举证
+		        lawyer.burden();
+		        //律师代替小民进行辩护
+		        lawyer.defend();
+		        //完成诉讼
+		        lawyer.finish();
+		    }
+		}
+
+	代理模式分为两种：
+		1.静态代理模式(比如上面的示例)；
+		2.动态代理模式
+			Java 提供了一个边界的动态代理接口 InvocationHandler ,实现该接口
+			并重写其调用方法invoke
+
+		示例：
+
+			/**
+			 * 动态代理类
+			 */
+			public class DynamicProxy implements InvocationHandler {
+
+			    private Object obj; //被代理类的引用
+
+			    public DynamicProxy(Object obj) {
+			        this.obj = obj;
+			    }
+
+			    @Override
+			    public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+			        //调用被代理对象的方法
+			        Object result = method.invoke(obj,args);
+			        return result;
+			    }
+			}
+
+			public class Client {
+			    public static void main(String[] args) {
+			        //构造一个小民
+			        ILawsuit xiaomin = new XiaoMin();
+			        //构造一个动态代理类
+			        DynamicProxy dynamicProxy = new DynamicProxy(xiaomin);
+			        //获取被代理类小民的ClassLoader
+			        ClassLoader loader = xiaomin.getClass().getClassLoader();
+			        // 动态构造一个代理者律师
+			        ILawsuit lawyer = (ILawsuit) Proxy.newProxyInstance(loader,
+			                new Class[]{ILawsuit.class}, dynamicProxy);
+			        //律师提交诉讼申请
+			        lawyer.submit();
+			        //律师进行举证
+			        lawyer.burden();
+			        //律师代替小民进行辩护
+			        lawyer.defend();
+			        //完成诉讼
+			        lawyer.finish();
+			    }
+			}
+
+		静态代理和动态代理是从code方面来区分代理模式的两种方式，
+		我们也可以从其适用范围来区分不同类型的代理实现：
+			1.远程的代理(Remote Proxy):
+				为某个对象在不同的内存地址空间提供局部代理。
+				使系统可以将 Server 部分的实现隐藏，以便Client
+				可以不必考虑Server的存在。
+			2.虚拟代理(Virtual Proxy):
+				使用一个代理对象表示一个十分耗资源的对象并在真正需要时
+				才创建。
+			3.保护代理(Protection Proxy):
+				使用代理控制对原始对象的访问。该类型的代理常被用于原始对象
+				有不同访问权限的情况。
+			4.智能引用(Smart Reference):
+				在访问原始对象时执行一些自己的附加操作并对指向原始对象的引用计数。
+
+			这里要注意的是，静态代理和动态代理都可以应用与上述4种情形，两者是各
+			自独立的变化。
+
+	Android 源码种的代理模式实现：
+		Android 源码里面有不少关于代理模式的实现，比如源码里的ActivityManagerProxy
+	    代理类，其具体代理的是 ActivityManagerNative的子类 
+	    ActivityManagerService.
